@@ -38,3 +38,13 @@ npm run typecheck # Run tsc --noEmit
 ## Authentication Toggle
 
 By default, `REQUIRE_AUTH` in `src/auth/auth-context.tsx` is `false` so all tabs (`Home`, `Explore`, `Users`, `Profile`) open immediately. Set `REQUIRE_AUTH = true` to guard the shell behind `/login`.
+
+## Deploy on Netlify
+
+`netlify.toml` is already configured for static PWA hosting:
+
+- **Build command:** `npm run build`
+- **Publish directory:** `dist/client` (where `@solidjs/vite-plugin` emits the static bundle, `index.html`, `manifest.webmanifest`, and `sw.js`)
+- **Node version:** `22` (satisfies `solid-js` 2.0 `>=22.12.0` and `vite` 8)
+- **SPA fallback:** `/* -> /index.html` (`200`) for client-side routes (`/explore`, `/profile`, `/users/:id`, `/login`)
+- **PWA headers:** `no-cache` on `/sw.js` and `/registerSW.js`, `application/manifest+json` on `/manifest.webmanifest`, and immutable caching on `/assets/*`

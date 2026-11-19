@@ -10,8 +10,8 @@ for arg in "$@"; do
     ;;
   -h | --help)
     echo "Usage: $0 [-a|--all]"
-    echo "  (default)   Format TypeScript/JavaScript inside src/ and all Markdown (.md) files"
-    echo "  -a, --all   Format TypeScript/JavaScript and Markdown (.md) files in the entire repository"
+    echo "  (default)   Format TypeScript/JavaScript/CSS inside src/ and all Markdown (.md) files"
+    echo "  -a, --all   Format TypeScript/JavaScript, CSS, and Markdown (.md) files in the entire repository"
     exit 0
     ;;
   *)
@@ -23,25 +23,25 @@ for arg in "$@"; do
 done
 
 run_prettier_all() {
-  find . \( -path "*/.*" -o -path "*/node_modules" \) -prune -o \
-    \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.mjs" -o -name "*.cjs" -o -name "*.md" \) \
+  find . \( -path "*/.*" -o -path "*/node_modules" -o -path "./dist" -o -path "./dev-dist" \) -prune -o \
+    \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.mjs" -o -name "*.cjs" -o -name "*.css" -o -name "*.md" \) \
     -type f -exec "$@" --write {} +
 }
 
 run_prettier_src_and_md() {
   if [ -d "$TARGET_DIR" ]; then
     find "$TARGET_DIR" \( -path "*/.*" -o -path "*/node_modules" \) -prune -o \
-      \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.mjs" -o -name "*.cjs" \) \
+      \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.mjs" -o -name "*.cjs" -o -name "*.css" \) \
       -type f -exec "$@" --write {} +
   else
-    echo "⚠️  Directory '$TARGET_DIR' not found. Skipping TypeScript/JavaScript formatting."
+    echo "⚠️  Directory '$TARGET_DIR' not found. Skipping TypeScript/JavaScript/CSS formatting."
   fi
 
-  find . \( -path "*/.*" -o -path "*/node_modules" \) -prune -o \
+  find . \( -path "*/.*" -o -path "*/node_modules" -o -path "./dist" -o -path "./dev-dist" \) -prune -o \
     -name "*.md" -type f -exec "$@" --write {} +
 }
 
-# 1. Format TypeScript, JavaScript, and Markdown files with Prettier
+# 1. Format TypeScript, JavaScript, CSS, and Markdown files with Prettier
 if command -v prettier >/dev/null 2>&1; then
   PRETTIER_CMD=(prettier)
 elif [ -x "./node_modules/.bin/prettier" ]; then
@@ -53,12 +53,12 @@ else
 fi
 
 if [ ${#PRETTIER_CMD[@]} -eq 0 ]; then
-  echo "⚠️  Neither 'prettier' nor 'npx' found. Skipping TypeScript/JavaScript/Markdown formatting."
+  echo "⚠️  Neither 'prettier' nor 'npx' found. Skipping TypeScript/JavaScript/CSS/Markdown formatting."
 elif [ "$TARGET_DIR" = "." ]; then
-  echo "✨ Formatting TypeScript, JavaScript, and Markdown files in entire repository with ${PRETTIER_CMD[*]}..."
+  echo "✨ Formatting TypeScript, JavaScript, CSS, and Markdown files in entire repository with ${PRETTIER_CMD[*]}..."
   run_prettier_all "${PRETTIER_CMD[@]}"
 else
-  echo "✨ Formatting TypeScript/JavaScript in '$TARGET_DIR/' and all Markdown files with ${PRETTIER_CMD[*]}..."
+  echo "✨ Formatting TypeScript/JavaScript/CSS in '$TARGET_DIR/' and all Markdown files with ${PRETTIER_CMD[*]}..."
   run_prettier_src_and_md "${PRETTIER_CMD[@]}"
 fi
 
