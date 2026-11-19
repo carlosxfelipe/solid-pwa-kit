@@ -1,5 +1,9 @@
 # Solid PWA Kit
 
+> **⚠️ THIS PROJECT IS CURRENTLY UNDER DEVELOPMENT.**
+
+Web preview: [https://solid-pwa-kit.netlify.app/users](https://solid-pwa-kit.netlify.app/users)
+
 A standalone **Progressive Web App (PWA)** web starter template built with **Solid 2.0**, **`@solidjs/router` v2**, **Material 3 color presets**, and **`vite-plugin-pwa`** (Workbox).
 
 Created with the official Solid 2.0 CLI:
