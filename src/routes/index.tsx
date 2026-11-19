@@ -115,11 +115,11 @@ export default function Home() {
           />
           <AppListCard
             icon="github"
-            title="Expo Route Kit (Mobile Companion)"
-            subtitle="carlosxfelipe/expo-route-kit"
+            title="GitHub Repository"
+            subtitle="carlosxfelipe/solid-pwa-kit"
             onClick={() =>
               window.open(
-                "https://github.com/carlosxfelipe/expo-route-kit",
+                "https://github.com/carlosxfelipe/solid-pwa-kit",
                 "_blank",
                 "noopener,noreferrer",
               )
