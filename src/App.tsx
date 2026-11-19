@@ -1,3 +1,4 @@
+import "@fontsource-variable/ubuntu-sans";
 import { Title } from "@solidjs/meta";
 import { useLocation, useNavigate } from "@solidjs/router";
 import {
