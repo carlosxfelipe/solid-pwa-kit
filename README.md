@@ -39,6 +39,16 @@ npm run lint      # Lint with oxlint (eslint-plugin-solid v2 rules)
 npm run typecheck # Run tsc --noEmit
 ```
 
+### Using as a Template
+
+Run `./rename.sh` to rename the package, PWA manifest, document metadata, `localStorage` keys, route titles, and README heading:
+
+```bash
+./rename.sh my-app
+# or specify display name and PWA short name explicitly:
+./rename.sh habit-tracker "Habit Tracker" "Habits"
+```
+
 ## Authentication Toggle
 
 By default, `REQUIRE_AUTH` in `src/auth/auth-context.tsx` is `false` so all tabs (`Home`, `Explore`, `Users`, `Profile`) open immediately. Set `REQUIRE_AUTH = true` to guard the shell behind `/login`.
