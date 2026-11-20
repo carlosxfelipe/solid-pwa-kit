@@ -189,7 +189,7 @@ export default function Explore() {
         />
 
         <h2 class="section-heading">AppTextField</h2>
-        <div class="stack-sm">
+        <div class="stack-md">
           <AppTextField
             value={username()}
             onInput={setUsername}

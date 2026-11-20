@@ -7,6 +7,7 @@ import { ThemeProvider, useAppTheme } from "@/theme";
 import { AppBottomSheet } from "./AppBottomSheet";
 import { AppButton } from "./AppButton";
 import { AppSwitch } from "./AppSwitch";
+import { AppTextField } from "./AppTextField";
 import { SnackbarProvider, useSnackbar } from "./Snackbar";
 import { ThemePresetSwitcher, ThemeSwitcher } from "./ThemeSwitchers";
 
@@ -136,6 +137,104 @@ describe("Solid 2.0 Core Components & Providers", () => {
         );
       },
       { scenario: "auth-and-snackbar" },
+    );
+
+    expectNoDiagnostics(artifact);
+  });
+
+  test("AppTextField floats label on focus/value, toggles visibility, and shows error with zero diagnostics", async () => {
+    const { artifact } = await captureArtifact(
+      () => {
+        function FormProbe() {
+          const [email, setEmail] = createSignal("");
+          const [password, setPassword] = createSignal("");
+          const [error, setError] = createSignal<string | undefined>(undefined);
+
+          return (
+            <div>
+              <AppTextField
+                value={email()}
+                onInput={setEmail}
+                label="Email"
+                placeholder="you@example.com"
+                prefixIcon="email-outline"
+                errorText={error()}
+                testId="email-field"
+              />
+              <AppTextField
+                value={password()}
+                onInput={setPassword}
+                label="Password"
+                prefixIcon="lock-outline"
+                obscureText
+                enableVisibilityToggle
+                testId="password-field"
+              />
+              <button type="button" onClick={() => setError("Required")}>
+                Trigger error
+              </button>
+            </div>
+          );
+        }
+
+        const { getByTestId, getByRole, queryByTestId } = render(() => (
+          <FormProbe />
+        ));
+
+        const emailInput = getByTestId("email-field") as HTMLInputElement;
+        const emailContainer = getByTestId("email-field-container");
+        const emailLabel = emailContainer.querySelector(
+          ".text-field__label-wrapper",
+        )!;
+
+        // Resting state: not floated, no placeholder until focused
+        expect(emailLabel).not.toHaveClass(
+          "text-field__label-wrapper--floated",
+        );
+        expect(emailLabel).toHaveClass(
+          "text-field__label-wrapper--with-prefix",
+        );
+        expect(emailInput).not.toHaveAttribute("placeholder");
+
+        // Focus: floats label and reveals placeholder
+        fireEvent.focus(emailInput);
+        flush();
+        expect(emailContainer).toHaveClass("text-field__box--focused");
+        expect(emailLabel).toHaveClass("text-field__label-wrapper--floated");
+        expect(emailLabel).toHaveClass("text-field__label-wrapper--focused");
+        expect(emailInput).toHaveAttribute("placeholder", "you@example.com");
+
+        // Blur while empty: returns to resting state
+        fireEvent.blur(emailInput);
+        flush();
+        expect(emailContainer).not.toHaveClass("text-field__box--focused");
+        expect(emailLabel).not.toHaveClass(
+          "text-field__label-wrapper--floated",
+        );
+
+        // Typing value: stays floated after blur
+        fireEvent.input(emailInput, { target: { value: "a@b.com" } });
+        flush();
+        expect(emailLabel).toHaveClass("text-field__label-wrapper--floated");
+
+        // Error state
+        expect(queryByTestId("email-field-error")).not.toBeInTheDocument();
+        fireEvent.click(getByRole("button", { name: "Trigger error" }));
+        flush();
+        expect(emailContainer).toHaveClass("text-field__box--error");
+        expect(getByTestId("email-field-error")).toHaveTextContent("Required");
+
+        // Password visibility toggle
+        const passwordInput = getByTestId("password-field") as HTMLInputElement;
+        expect(passwordInput.type).toBe("password");
+        fireEvent.click(getByRole("button", { name: "Show password" }));
+        flush();
+        expect(passwordInput.type).toBe("text");
+        fireEvent.click(getByRole("button", { name: "Hide password" }));
+        flush();
+        expect(passwordInput.type).toBe("password");
+      },
+      { scenario: "text-field-floating-label" },
     );
 
     expectNoDiagnostics(artifact);

@@ -662,66 +662,220 @@ button,
 }
 
 /* AppTextField */
-.text-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+@keyframes text-field-autofill-start {
+  from {
+  }
+  to {
+  }
 }
 
-.text-field__label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--md-on-surface-variant);
+@keyframes text-field-autofill-cancel {
+  from {
+  }
+  to {
+  }
+}
+
+.text-field {
+  width: 100%;
 }
 
 .text-field__box {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-height: 48px;
-  padding: 0 12px;
-  border-radius: 12px;
-  background-color: var(--md-surface-container-lowest);
-  border: 1px solid var(--md-outline);
-  transition: border-color 150ms ease;
+  min-height: 52px;
+  padding: 0 14px;
+  border-radius: 14px;
+  background-color: var(--md-surface-container-low);
+  border: 1px solid var(--md-outline-variant);
+  overflow: visible;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
 }
 
+.text-field__box--focused,
 .text-field__box:focus-within {
   border-color: var(--md-primary);
-  box-shadow: 0 0 0 1px var(--md-primary);
+  box-shadow: inset 0 0 0 0.5px var(--md-primary);
 }
 
-.text-field__box--error {
+.text-field__box--error,
+.text-field__box--error:focus-within {
   border-color: var(--md-error);
+  box-shadow: inset 0 0 0 0.5px var(--md-error);
 }
 
-.text-field__prefix,
-.text-field__toggle {
+.text-field__box--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.text-field__label-wrapper {
+  position: absolute;
+  top: 16px;
+  left: 10px;
+  max-width: calc(100% - 20px);
+  padding: 0 4px;
+  z-index: 2;
+  pointer-events: none;
+  transition:
+    top 150ms ease,
+    left 150ms ease;
+}
+
+.text-field__label-wrapper--with-prefix {
+  left: 40px;
+  max-width: calc(100% - 50px);
+}
+
+.text-field__label-wrapper--floated {
+  top: -9px;
+  left: 10px;
+  max-width: calc(100% - 20px);
+}
+
+.text-field__label-cutout {
+  position: absolute;
+  top: 7px;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background-color: var(--text-field-label-bg, var(--md-surface));
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 150ms ease;
+}
+
+.text-field__label-wrapper--floated .text-field__label-cutout {
+  opacity: 1;
+}
+
+.text-field__label-text {
+  position: relative;
+  z-index: 1;
+  display: block;
+  font-size: 16px;
+  line-height: 18px;
+  font-weight: 400;
+  color: var(--md-on-surface-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    font-size 150ms ease,
+    color 150ms ease;
+}
+
+.text-field__label-wrapper--floated .text-field__label-text {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.text-field__label-wrapper--focused .text-field__label-text {
+  color: var(--md-primary);
+}
+
+.text-field__label-wrapper--error .text-field__label-text {
+  color: var(--md-error);
+}
+
+.text-field__prefix {
+  margin-right: 10px;
   color: var(--md-on-surface-variant);
   display: grid;
   place-items: center;
+  flex-shrink: 0;
+  transition: color 150ms ease;
 }
 
-.text-field__toggle {
-  border: none;
-  background: transparent;
-  padding: 4px;
-  cursor: pointer;
+.text-field__box--focused .text-field__prefix,
+.text-field__box:focus-within .text-field__prefix {
+  color: var(--md-primary);
+}
+
+.text-field__box--error .text-field__prefix,
+.text-field__box--error:focus-within .text-field__prefix {
+  color: var(--md-error);
 }
 
 .text-field__input {
   flex: 1;
   min-width: 0;
+  height: 50px;
+  padding: 0;
   border: none;
   outline: none;
   background: transparent;
   color: var(--md-on-surface);
-  font-size: 15px;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0.25px;
+  caret-color: var(--md-primary);
+}
+
+.text-field__input:focus-visible {
+  outline: none;
+}
+
+.text-field__input::placeholder {
+  color: var(--md-on-surface-variant);
+  opacity: 1;
+}
+
+.text-field__input:disabled {
+  cursor: not-allowed;
+}
+
+.text-field__input--multiline {
+  height: auto;
+  min-height: 96px;
+  padding: 12px 0;
+  resize: vertical;
+}
+
+.text-field__input:-webkit-autofill,
+.text-field__input:-webkit-autofill:hover,
+.text-field__input:-webkit-autofill:focus {
+  animation-name: text-field-autofill-start;
+  animation-duration: 1ms;
+  -webkit-box-shadow: 0 0 0 1000px var(--md-surface-container-low) inset;
+  box-shadow: 0 0 0 1000px var(--md-surface-container-low) inset;
+  -webkit-text-fill-color: var(--md-on-surface);
+  caret-color: var(--md-on-surface);
+  transition: background-color 999999s ease-in-out 0s;
+}
+
+.text-field__input:not(:-webkit-autofill) {
+  animation-name: text-field-autofill-cancel;
+  animation-duration: 1ms;
+}
+
+.text-field__suffix {
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.text-field__toggle {
+  border: none;
+  background: transparent;
+  color: var(--md-on-surface-variant);
+  padding: 4px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
 }
 
 .text-field__error {
-  margin: 0;
+  margin: 4px 0 0 4px;
   font-size: 12px;
+  line-height: 16px;
   color: var(--md-error);
 }
 
