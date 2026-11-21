@@ -2,6 +2,7 @@ import {
   type Accessor,
   createContext,
   createSignal,
+  onSettled,
   type ParentProps,
   useContext,
 } from "solid-js";
@@ -21,6 +22,7 @@ function readStoredEmail(): string | null {
 }
 
 export interface AuthSessionContextValue {
+  authReady: Accessor<boolean>;
   isAuthenticated: Accessor<boolean>;
   userEmail: Accessor<string>;
   signIn: (email?: string) => void;
@@ -31,12 +33,25 @@ const AuthContext = createContext<AuthSessionContextValue>();
 
 export function AuthProvider(props: ParentProps) {
   const initialEmail = readStoredEmail();
+  // Starts false during SSR/prerender (when window is unavailable) and resolves
+  // on client settle; async auth backends should keep it false until session
+  // hydration completes so route guards do not redirect prematurely.
+  const [authReady, setAuthReady] = createSignal(typeof window !== "undefined");
   const [isAuthenticated, setIsAuthenticated] = createSignal(
     !REQUIRE_AUTH || initialEmail !== null,
   );
   const [userEmail, setUserEmail] = createSignal(
     initialEmail ?? "user@example.com",
   );
+
+  onSettled(() => {
+    const storedEmail = readStoredEmail();
+    if (storedEmail !== null) {
+      setUserEmail(storedEmail);
+      setIsAuthenticated(true);
+    }
+    setAuthReady(true);
+  });
 
   const signIn = (email?: string) => {
     const nextEmail = email?.trim() || "user@example.com";
@@ -63,6 +78,7 @@ export function AuthProvider(props: ParentProps) {
   };
 
   const value: AuthSessionContextValue = {
+    authReady,
     isAuthenticated,
     userEmail,
     signIn,

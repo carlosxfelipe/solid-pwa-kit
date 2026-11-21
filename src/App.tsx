@@ -17,6 +17,7 @@ import {
   PwaUpdateToast,
   SnackbarProvider,
 } from "@/components/core";
+import { formatErrorMessage } from "@/format-error";
 import { PwaProvider } from "@/pwa";
 import { paths, Router } from "@/router";
 import { ThemeProvider } from "@/theme";
@@ -61,15 +62,16 @@ const NAV_TABS: readonly NavTab[] = [
 function AppShell(props: ParentProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthSession();
+  const { authReady, isAuthenticated } = useAuthSession();
 
   createEffect(
     () => ({
+      ready: authReady(),
       auth: isAuthenticated(),
       pathname: location.pathname,
     }),
-    ({ auth, pathname }) => {
-      if (REQUIRE_AUTH && !auth && pathname !== paths.login()) {
+    ({ ready, auth, pathname }) => {
+      if (REQUIRE_AUTH && ready && !auth && pathname !== paths.login()) {
         navigate(paths.login(), { replace: true });
       }
     },
@@ -128,9 +130,7 @@ function AppShell(props: ParentProps) {
             <main class="page-content">
               <div class="surface-box stack-md">
                 <h2>Something went wrong</h2>
-                <p class="helper-text">
-                  {err instanceof Error ? err.message : String(err)}
-                </p>
+                <p class="helper-text">{formatErrorMessage(err)}</p>
                 <AppButton label="Retry" onClick={reset} />
               </div>
             </main>

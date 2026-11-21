@@ -3,6 +3,7 @@ import { captureArtifact, expectNoDiagnostics } from "@solidjs/diagnostics";
 import { createSignal, flush } from "solid-js";
 import { describe, expect, test, vi } from "vitest";
 import { AuthProvider, useAuthSession } from "@/auth";
+import { formatErrorMessage } from "@/format-error";
 import { ThemeProvider, useAppTheme } from "@/theme";
 import { AppBottomSheet } from "./AppBottomSheet";
 import { AppButton } from "./AppButton";
@@ -95,13 +96,13 @@ describe("Solid 2.0 Core Components & Providers", () => {
     const { artifact } = await captureArtifact(
       () => {
         function AuthProbe() {
-          const { isAuthenticated, userEmail, signIn, signOut } =
+          const { authReady, isAuthenticated, userEmail, signIn, signOut } =
             useAuthSession();
           const { showSnackbar } = useSnackbar();
           return (
             <div>
               <span data-testid="auth-state">
-                {`${isAuthenticated()}:${userEmail()}`}
+                {`${authReady()}:${isAuthenticated()}:${userEmail()}`}
               </span>
               <AppButton
                 label="Sign In"
@@ -123,17 +124,22 @@ describe("Solid 2.0 Core Components & Providers", () => {
           </AuthProvider>
         ));
 
+        flush();
+        expect(getByTestId("auth-state")).toHaveTextContent(
+          "true:true:user@example.com",
+        );
+
         fireEvent.click(getByRole("button", { name: "Sign In" }));
         flush();
         expect(getByTestId("auth-state")).toHaveTextContent(
-          "true:dev@solid.dev",
+          "true:true:dev@solid.dev",
         );
         expect(queryByRole("status")).toHaveTextContent("Signed in");
 
         fireEvent.click(getByRole("button", { name: "Sign Out" }));
         flush();
         expect(getByTestId("auth-state")).toHaveTextContent(
-          "false:dev@solid.dev",
+          "true:false:dev@solid.dev",
         );
       },
       { scenario: "auth-and-snackbar" },
@@ -238,5 +244,17 @@ describe("Solid 2.0 Core Components & Providers", () => {
     );
 
     expectNoDiagnostics(artifact);
+  });
+
+  test("formatErrorMessage extracts readable messages from Error and plain objects", () => {
+    expect(formatErrorMessage(new Error("Boom"))).toBe("Boom");
+    expect(
+      formatErrorMessage({ message: "JWT expired", code: "PGRST301" }),
+    ).toBe("JWT expired");
+    expect(formatErrorMessage({ error_description: "Invalid grant" })).toBe(
+      "Invalid grant",
+    );
+    expect(formatErrorMessage({ code: 500 })).toBe('{"code":500}');
+    expect(formatErrorMessage("Network failure")).toBe("Network failure");
   });
 });

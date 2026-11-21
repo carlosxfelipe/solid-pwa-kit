@@ -53,6 +53,10 @@ Run `./rename.sh` to rename the package, PWA manifest, document metadata, `local
 
 By default, `REQUIRE_AUTH` in `src/auth/auth-context.tsx` is `false` so all tabs (`Home`, `Explore`, `Users`, `Profile`) open immediately. Set `REQUIRE_AUTH = true` to guard the shell behind `/login`.
 
+- **Async session readiness (`authReady`):** `AuthSessionContextValue` exposes `authReady()`, and `src/App.tsx` waits for `authReady()` before redirecting unauthenticated visitors to `/login`. In the default `localStorage` stub, `authReady()` starts `true` in the browser (and resolves in `onSettled` after prerender/hydration). When wiring an async auth provider (e.g., Supabase, Firebase, `/api/me`), initialize `authReady` to `false` and set it to `true` once the initial session resolves.
+- **Note for `REQUIRE_AUTH = true` with async auth:** Waiting on `authReady()` prevents premature redirects on deep links, though `AppShell` still renders the active route while `authReady()` is `false`. If you want to avoid any brief flash of protected UI or route queries before the session check completes, gate the protected shell content on `authReady()`.
+- **Error formatting:** `<Errored>` in `src/App.tsx` uses `formatErrorMessage` (`src/format-error.ts`) so both `Error` instances and plain API error objects (`{ message }`, `{ error_description }`, `{ error }`) render readable messages.
+
 ## Deploy on Netlify
 
 `netlify.toml` is already configured for static PWA hosting:
